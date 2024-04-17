@@ -1,10 +1,11 @@
+
 const authConfig = {
-  providers: [
-    {
-      domain: "https://innocent-perch-18.clerk.accounts.dev",
-      applicationID: "convex",
-    },
-  ],
+	providers: [
+		{
+			domain: process.env.CLERK_ISSUER_URL,
+			applicationID: "convex",
+		},
+	],
 };
 
 export default authConfig;
