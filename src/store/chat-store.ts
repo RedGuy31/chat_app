@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import { Id } from "../../convex/_generated/dataModel";
+import { create } from "zustand";
 
 export type Conversation = {
   _id: Id<"conversations">;

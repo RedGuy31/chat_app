@@ -17,6 +17,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import { toast } from "sonner";
+import { useConversationStore } from "@/store/chat-store";
 
 const UserListDialog = () => {
   const [selectedUsers, setSelectedUsers] = useState<Id<"users">[]>([]);
@@ -32,25 +33,29 @@ const UserListDialog = () => {
   const me = useQuery(api.users.getMe);
   const users = useQuery(api.users.getUsers);
   const generateUploadUrl = useMutation(api.conversations.generateUploadUrl);
+  const { setSelectedConversation } = useConversationStore();
 
   const handleCreateConversation = async () => {
     if (selectedUsers.length === 0) return;
     setIsLoading(true);
     try {
       const isGroup = selectedUsers.length > 1;
+
       let conversationId;
       if (!isGroup) {
-        const conversationId = await createConversation({
+        conversationId = await createConversation({
           participants: [...selectedUsers, me?._id!],
           isGroup: false,
         });
       } else {
         const postUrl = await generateUploadUrl();
+
         const result = await fetch(postUrl, {
           method: "POST",
           headers: { "Content-Type": selectedImage?.type! },
           body: selectedImage,
         });
+
         const { storageId } = await result.json();
 
         conversationId = await createConversation({
@@ -62,12 +67,28 @@ const UserListDialog = () => {
         });
       }
 
-      setSelectedUsers([]);
       dialogCloseRef.current?.click();
+      setSelectedUsers([]);
       setGroupName("");
       setSelectedImage(null);
+
+      const conversationName = isGroup
+        ? groupName
+        : users?.find((user) => user._id === selectedUsers[0])?.name;
+
+      setSelectedConversation({
+        _id: conversationId,
+        participants: selectedUsers,
+        isGroup,
+        image: isGroup
+          ? renderedImage
+          : users?.find((user) => user._id === selectedUsers[0])?.image,
+        name: conversationName,
+        admin: me?._id!,
+      });
     } catch (err) {
       toast.error("Failed to create conversation");
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
