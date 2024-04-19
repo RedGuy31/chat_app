@@ -1,10 +1,10 @@
-import OpenAi from "openai";
+import OpenAI from "openai";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 
 const apiKey = process.env.OPENAI_API_KEY;
-const openai = new OpenAi({ apiKey });
+const openai = new OpenAI({ apiKey });
 
 export const chat = action({
   args: {
@@ -18,7 +18,7 @@ export const chat = action({
         {
           role: "system",
           content:
-            "You are a terse bot in a group chat responding to questions with 5-sentence answers",
+            "You are a terse bot in a group chat responding to questions with 1-sentence answers",
         },
         {
           role: "user",

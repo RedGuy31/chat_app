@@ -45,10 +45,6 @@ export const createConversation = mutation({
   },
 });
 
-export const generateUploadUrl = mutation(async (ctx) => {
-  return await ctx.storage.generateUploadUrl();
-});
-
 export const getMyConversations = query({
   args: {},
   handler: async (ctx, args) => {
@@ -65,6 +61,7 @@ export const getMyConversations = query({
     if (!user) throw new ConvexError("User not found");
 
     const conversations = await ctx.db.query("conversations").collect();
+
     const myConversations = conversations.filter((conversation) => {
       return conversation.participants.includes(user._id);
     });
@@ -72,6 +69,7 @@ export const getMyConversations = query({
     const conversationsWithDetails = await Promise.all(
       myConversations.map(async (conversation) => {
         let userDetails = {};
+
         if (!conversation.isGroup) {
           const otherUserId = conversation.participants.find(
             (id) => id !== user._id
@@ -83,12 +81,14 @@ export const getMyConversations = query({
 
           userDetails = userProfile[0];
         }
+
         const lastMessage = await ctx.db
           .query("messages")
           .filter((q) => q.eq(q.field("conversation"), conversation._id))
           .order("desc")
           .take(1);
 
+        // return should be in this order, otherwise _id field will be overwritten
         return {
           ...userDetails,
           ...conversation,
@@ -123,4 +123,8 @@ export const kickUser = mutation({
       ),
     });
   },
+});
+
+export const generateUploadUrl = mutation(async (ctx) => {
+  return await ctx.storage.generateUploadUrl();
 });
